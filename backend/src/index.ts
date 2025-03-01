@@ -2,21 +2,16 @@ import express, { Request, Response } from "express";
 import { listOfAccount, listOfTokens } from "./data/data";
 import jwt from "jsonwebtoken";
 import { sha512 } from "js-sha512";
-import cors from 'cors';
-
+import cors from "cors";
 
 const port: number = 8000;
 
 const app = express();
-app.use(cors()) // Permite solicitudes desde el frontend
+app.use(cors()); // Permite solicitudes desde el frontend
 app.use(express.json());
 
 const appRouter = express.Router({});
-app.use("/account/login/",appRouter) //Router
-
-app.listen(port, () => {
-  console.log(`Server listening at port http://localhost:${port}`);
-});
+app.use("/account/login/", appRouter); //Router
 
 /* Account service
  */
@@ -64,107 +59,101 @@ const genToken = (userdata: UserData): Token => {
 
 // const saveCookie = (token: Token) => {};
 
-
-
 appRouter.post("/", (req: Request, res: Response) => {
-  try{
-  const username : string =  String (req.body.username)
-  const password : string =  String (req.body.password)
+  try {
+    const username: string = String(req.body.username);
+    const password: string = String(req.body.password);
 
-  console.log(password)
-  console.log(username)
+    console.log(password);
+    console.log(username);
 
-  if (!username) {
-    res.status(400).json({
-      success: false,
-      message: "Username is required.",
+    if (!username) {
+      res.status(400).json({
+        success: false,
+        message: "Username is required.",
+      });
+      return;
+    }
+
+    if (!password) {
+      res.status(400).json({
+        success: false,
+        message: "Password is required.",
+      });
+      return;
+    }
+
+    const user = listOfAccount.find((user) => user.username === username);
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: `User: ${username} not found!`,
+      });
+      return;
+    }
+
+    if (!user.active) {
+      res.status(404).json({
+        success: false,
+        message: `Please, contact with the IT manager.`,
+      });
+      return;
+    }
+
+    if (user.password !== password) {
+      res.status(401).json({
+        success: false,
+        message: "Credentials incorrect.",
+      });
+      return;
+    }
+
+    const hashedPassword = sha512(password);
+    const token = genToken({
+      id: user.id,
+      username: username,
+      password: hashedPassword,
     });
-    return;
-  }
 
-  if (!password) {
-    res.status(400).json({
-      success: false,
-      message: "Password is required.",
+    saveToken(token);
+
+    //   saveCookie(token);
+
+    //Cookie
+    //   const setCookie = (name: string, value: string, expired: number) => {
+    //     let newDate = new Date();
+    //     newDate.setTime(newDate.getTime() + (expired*24*60*60*1000));
+    //     const caducidad = `Caducidad = ${newDate.toUTCString()}`
+    //     document.cookie = `${name} + "=" ,${value} + "=", ${caducidad}`
+
+    //   }
+
+    //   const getCookie = () => {
+    //   console.log( document.cookie)
+    //   }
+
+    //   getCookie()
+    //clear session
+    //   const sessionData = () => {
+    //     let sessionData = sessionStorage;
+    //     sessionData.clear();
+    //     sessionData.setItem("username", user.username);
+    //     sessionData.setItem("name", user.name);
+    //     sessionData.setItem("token", token.token);
+    //   };
+
+    //   sessionData();
+
+    res.status(200).json({
+      success: true,
+      message: "Access Granted!",
+      token: token.token,
     });
-    return;
+  } catch (error) {
+    res.status(400).json({ message: error });
   }
+});
 
-  const user = listOfAccount.find((user) => user.username === username);
-  if (!user) {
-    res.status(404).json({
-      success: false,
-      message: `User: ${username} not found!`,
-    });
-    return;
-  }
-
-  if (!user.active) {
-    res.status(404).json({
-      success: false,
-      message: `Please, contact with the IT manager.`,
-    });
-    return;
-  }
-
-  if (user.password !== password) {
-    res.status(401).json({
-      success: false,
-      message: "Credentials incorrect.",
-    });
-    return;
-  }
-
-  const hashedPassword = sha512(password);
-  const token = genToken({
-    id: user.id,
-    username: username,
-    password: hashedPassword,
-  });
-
-
-
-  saveToken(token);
-
-
-
-  
-//   saveCookie(token);
-
-
-  //Cookie
-//   const setCookie = (name: string, value: string, expired: number) => {
-//     let newDate = new Date();
-//     newDate.setTime(newDate.getTime() + (expired*24*60*60*1000));
-//     const caducidad = `Caducidad = ${newDate.toUTCString()}`
-//     document.cookie = `${name} + "=" ,${value} + "=", ${caducidad}`
-
-    
-//   }
-
-//   const getCookie = () => {
-//   console.log( document.cookie)
-//   }
-
-
-//   getCookie()
-  //clear session
-//   const sessionData = () => {
-//     let sessionData = sessionStorage;
-//     sessionData.clear();
-//     sessionData.setItem("username", user.username);
-//     sessionData.setItem("name", user.name);
-//     sessionData.setItem("token", token.token);
-//   };
-
-//   sessionData();
-
-  res.status(200).json({
-    success: true,
-    message: "Access Granted!",
-    token: token.token
-  });
-} catch (error) {
-  res.status(400).json({message: error})
-};
+app.listen(port, () => {
+  console.log(`Server listening at port http://localhost:${port}`);
 });

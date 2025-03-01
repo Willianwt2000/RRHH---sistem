@@ -35,10 +35,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var _this = this;
-var user = document.getElementById("username");
-var password = document.getElementById("password");
+var user = document.querySelector("#username");
+var password = document.querySelector("#password");
 var loginForm = document.querySelector("#loginForm");
-var message = document.getElementById("message"); // Elemento para mostrar mensajes
+var messageContainer = document.querySelector("#message"); // Elemento para mostrar mensajes
 loginForm.addEventListener('submit', function (event) { return __awaiter(_this, void 0, void 0, function () {
     var userNameValue, userPasswordValue, response, data, error_1;
     return __generator(this, function (_a) {
@@ -74,16 +74,19 @@ loginForm.addEventListener('submit', function (event) { return __awaiter(_this, 
                     window.location.href = "/web/html/home.html";
                 }
                 else {
-                    message.textContent = data.message;
-                    message.style.color = "red";
+                    messageContainer.innerText = data.message;
+                    messageContainer.style.color = "red";
+                    messageContainer.style.display = "block";
+                    alert("Datos incorrectos");
                     user.value = "";
                     password.value = "";
                 }
                 return [3 /*break*/, 5];
             case 4:
                 error_1 = _a.sent();
-                message.textContent = "Error al conectar con el servidor"; //! error del mensaje
-                message.style.color = "red";
+                messageContainer.innerText = "Error al conectar con el servidor"; //! error del mensaje
+                messageContainer.style.color = "red";
+                messageContainer.style.display = "block";
                 return [3 /*break*/, 5];
             case 5: return [2 /*return*/];
         }
