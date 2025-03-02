@@ -87,6 +87,7 @@ loginForm.addEventListener('submit', function (event) { return __awaiter(_this, 
                 messageContainer.innerText = "Error al conectar con el servidor"; //! error del mensaje
                 messageContainer.style.color = "red";
                 messageContainer.style.display = "block";
+                password.style.borderColor = "red";
                 return [3 /*break*/, 5];
             case 5: return [2 /*return*/];
         }

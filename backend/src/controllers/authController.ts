@@ -1,20 +1,9 @@
-import express, { Request, Response } from "express";
-import { listOfAccount, listOfTokens } from "./data/data";
+import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { sha512 } from "js-sha512";
-import cors from "cors";
+import { listOfAccount, listOfTokens } from "../data/data";
 
-const port: number = 8000;
-
-const app = express();
-app.use(cors()); // Permite solicitudes desde el frontend
-app.use(express.json());
-
-const appRouter = express.Router({});
-app.use("/account/login/", appRouter); //Router
-
-/* Account service
- */
+const SECRET_KEY = "SECRET_KEY";
 
 type UserData = {
   id: number;
@@ -33,7 +22,7 @@ const saveToken = (token: Token) => {
     userId: token.userId,
     token: token.token,
     creationDate: Date.now().toString(),
-    expiresIn: "",
+    expiresIn: "1d",
     active: true,
   });
 };
@@ -45,7 +34,7 @@ const genToken = (userdata: UserData): Token => {
       username: userdata.username,
       password: userdata.password,
     },
-    "SECRET_KEY",
+    SECRET_KEY,
     { expiresIn: "1d" }
   );
 
@@ -57,15 +46,10 @@ const genToken = (userdata: UserData): Token => {
   return token;
 };
 
-// const saveCookie = (token: Token) => {};
-
-appRouter.post("/", (req: Request, res: Response) => {
+export const login = (req: Request, res: Response) => {
   try {
     const username: string = String(req.body.username);
     const password: string = String(req.body.password);
-
-    console.log(password);
-    console.log(username);
 
     if (!username) {
       res.status(400).json({
@@ -117,33 +101,6 @@ appRouter.post("/", (req: Request, res: Response) => {
 
     saveToken(token);
 
-    //   saveCookie(token);
-
-    //Cookie
-    //   const setCookie = (name: string, value: string, expired: number) => {
-    //     let newDate = new Date();
-    //     newDate.setTime(newDate.getTime() + (expired*24*60*60*1000));
-    //     const caducidad = `Caducidad = ${newDate.toUTCString()}`
-    //     document.cookie = `${name} + "=" ,${value} + "=", ${caducidad}`
-
-    //   }
-
-    //   const getCookie = () => {
-    //   console.log( document.cookie)
-    //   }
-
-    //   getCookie()
-    //clear session
-    //   const sessionData = () => {
-    //     let sessionData = sessionStorage;
-    //     sessionData.clear();
-    //     sessionData.setItem("username", user.username);
-    //     sessionData.setItem("name", user.name);
-    //     sessionData.setItem("token", token.token);
-    //   };
-
-    //   sessionData();
-
     res.status(200).json({
       success: true,
       message: "Access Granted!",
@@ -152,8 +109,4 @@ appRouter.post("/", (req: Request, res: Response) => {
   } catch (error) {
     res.status(400).json({ message: error });
   }
-});
-
-app.listen(port, () => {
-  console.log(`Server listening at port http://localhost:${port}`);
-});
+};
